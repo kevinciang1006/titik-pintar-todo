@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use Illuminate\Http\Request;
 
@@ -17,9 +18,11 @@ class TaskController extends Controller
         $q = $request->has('q') ? $request->query('q') : null; // all
         $state = $request->has('state') ? $request->query('state') : null; // all
 
-        return Task::search($q)
+        $tasks = Task::search($q)
                     ->state($state)
                     ->get();
+
+        return TaskResource::collection($tasks);
     }
 
     /**
@@ -43,7 +46,7 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        return $task;
+        return new TaskResource($task);
     }
 
     /**
@@ -57,7 +60,9 @@ class TaskController extends Controller
     {
         $task->update($request->all());
 
-        return response()->json($task, 200);
+        $res = new TaskResource($task);
+
+        return response()->json($res, 200);
     }
 
     /**

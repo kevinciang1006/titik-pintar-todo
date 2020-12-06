@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\SectionResource;
 use App\Models\Section;
 use Illuminate\Http\Request;
 
@@ -17,9 +18,11 @@ class SectionController extends Controller
         $q = $request->has('q') ? $request->query('q') : null; // all
         // $state = $request->has('state') ? $request->query('state') : 'to do'; // all
 
-        return Section::search($q)
+        $sections = Section::search($q)
                         // ->with('task')
                         ->get();
+
+        return SectionResource::collection($sections);
     }
 
     /**
@@ -43,7 +46,7 @@ class SectionController extends Controller
      */
     public function show(Section $section)
     {
-        return $section;
+        return new SectionResource($section);
     }
 
     /**
@@ -56,9 +59,10 @@ class SectionController extends Controller
     {
         // return $sectionId + $taskId;
         return Section::where('id', $sectionId)
-            ->taskId($taskId)
-            ->with('task')
-            ->get();
+                        ->with(['task' => function($q) use ($taskId) {
+                            $q->where('id', $taskId);
+                        }])
+                        ->get();
     }
 
     /**
@@ -72,7 +76,9 @@ class SectionController extends Controller
     {
         $section->update($request->all());
 
-        return response()->json($section, 200);
+        $res = new SectionResource($section);
+
+        return response()->json($res, 200);
     }
 
     /**
