@@ -19,6 +19,7 @@ class CreateTasksTable extends Migration
             $table->string('name');
             $table->enum('state', ['to do', 'done']);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

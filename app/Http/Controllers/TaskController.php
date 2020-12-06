@@ -49,6 +49,11 @@ class TaskController extends Controller
         return new TaskResource($task);
     }
 
+    public function taskUndo($taskId) 
+    {
+        Task::withTrashed()->where('id', $taskId)->restore();
+    }
+
     /**
      * Update the specified resource in storage.
      *

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\SectionResource;
+use App\Http\Resources\SectionTaskResource;
 use App\Models\Section;
+use App\Models\Task;
 use Illuminate\Http\Request;
 
 class SectionController extends Controller
@@ -16,10 +18,8 @@ class SectionController extends Controller
     public function index(Request $request)
     {
         $q = $request->has('q') ? $request->query('q') : null; // all
-        // $state = $request->has('state') ? $request->query('state') : 'to do'; // all
 
         $sections = Section::search($q)
-                        // ->with('task')
                         ->get();
 
         return SectionResource::collection($sections);
@@ -57,12 +57,42 @@ class SectionController extends Controller
      */
     public function sectionTask($sectionId, $taskId)
     {
-        // return $sectionId + $taskId;
         return Section::where('id', $sectionId)
                         ->with(['task' => function($q) use ($taskId) {
                             $q->where('id', $taskId);
                         }])
                         ->get();
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function sectionTaskAll(Request $request) 
+    {
+        // Query Section
+        $qs = $request->has('qs') ? $request->query('qs') : null; // all
+        // Query Task
+        $qt = $request->has('qt') ? $request->query('qt') : null; // all
+        $state = $request->has('state') ? $request->query('state') : null; // all
+
+        $sections = Section::search($qs)
+                        ->with(['task' => function($task) use ($qt, $state) {
+                            $task->search($qt)
+                                ->state($state);
+                        }])
+                        ->get();
+
+                        // return $sections;
+        return SectionTaskResource::collection($sections);
+    }
+
+    public function sectionUndo($sectionId) 
+    {
+        Section::withTrashed()->find($sectionId)->restore();
+        Task::withTrashed()->where('section_id', $sectionId)->restore();
     }
 
     /**

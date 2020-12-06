@@ -21,6 +21,9 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::get('sections/{sectionId}/tasks/{taskId}', [SectionController::class, 'sectionTask']);
+Route::get('sections/tasks', [SectionController::class, 'sectionTaskAll']);
+Route::get('sections/undo/{sectionId}', [SectionController::class, 'sectionUndo']);
+Route::get('tasks/undo/{taskId}', [TaskController::class, 'taskUndo']);
 Route::apiResources([
     'sections' => SectionController::class,
     'tasks' => TaskController::class,
