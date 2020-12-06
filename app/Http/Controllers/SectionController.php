@@ -57,11 +57,13 @@ class SectionController extends Controller
      */
     public function sectionTask($sectionId, $taskId)
     {
-        return Section::where('id', $sectionId)
+        $section = Section::where('id', $sectionId)
                         ->with(['task' => function($q) use ($taskId) {
                             $q->where('id', $taskId);
                         }])
-                        ->get();
+                        ->first();
+
+            return new SectionTaskResource($section);
     }
 
     /**
